@@ -32,7 +32,6 @@ const int FPS = 90;
 
 void main()
 {
-	foo("what the fuck!");
 	// window shit
     auto windowStyle = sf::Style::Close | sf::Style::Titlebar;
     auto window = sf::RenderWindow(sf::VideoMode({ SCREEN_WIDTH, SCREEN_HEIGHT }), "FlappyBird", windowStyle);
@@ -58,8 +57,8 @@ void main()
 	resetGame();
     
     // game shit: player
-    //player::sprite_radius = 11.f;
-    //player::sprite = sf::CircleShape(player::sprite_radius);
+    player::sprite_radius = 11.f;
+    player::sprite = sf::CircleShape(player::sprite_radius);
 
    
     while (window.isOpen()) {
@@ -112,7 +111,7 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
 			std::cout << "pressed!\n";
             if (gameRunning || prestartScreen){
 				std::cout << "Jump()!\n";
-				//player::jump();
+				player::jump();
 				prestartScreen = false;
 				gameRunning = true;
 				deathScreen = false;
@@ -128,22 +127,22 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
 }
 
 void computeGame(sf::Time deltaTime, bool& gameRunning) {
-	//player::fall(deltaTime);
-	//player::maybeProcessJump(deltaTime);
+	player::fall(deltaTime);
+	player::maybeProcessJump(deltaTime);
 
-	/*if (player::y_coord > SCREEN_HEIGHT + 100.f){
+	if (player::y_coord > SCREEN_HEIGHT + 100.f){
 		gameRunning = false;
-	}*/
+	}
 }
 
 void displayPlayer(sf::RenderWindow& window) {
-    //player::updateCoords();
+    player::updateCoords();
     window.draw(player::sprite);
 }
 
 void resetGame() {
-    //player::y_coord = INITIAL_Y_COORD;
-	//player::initClocks();
+    player::y_coord = INITIAL_Y_COORD;
+	player::initClocks();
 	std::cout << "resetGame()!\n";
 	return;
 }

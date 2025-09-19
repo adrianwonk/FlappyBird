@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 
-using namespace player;
+//using namespace player;
 	// this class provides the following functionalities:
 		// Storing a sprite object to represent the player, the position of which is updated per frame via updateCoords();
 		// displaces the sprite in 4 stages:
@@ -16,9 +16,7 @@ using namespace player;
 			// gravity 					-- determines the average downward force of the world.
 			// fallTransition 			-- determines length of 2.
 			// constantFallMultiplier 	-- determines the coefficient of t during constant fall (t: time since fall began)
-foo(std::string x) {
-	std::cout << x << '\n';
-}
+
 
 namespace player {
 	const double pi = 3.14159265358979323846f;
@@ -49,7 +47,7 @@ namespace player {
 		return numerator / denominator;
 	}
 
-	void player::initClocks() {
+	void initClocks() {
 		jumpClock.reset();
 		fallClock.reset();
 	}
@@ -62,12 +60,12 @@ namespace player {
 	////////////////////////////////////////////
 
 	// interrupts fall
-	void player::jump() {
+	void jump() {
 		jumpClock.restart();
 		fallClock.stop();
 	}
 	// Ran in computeGame()
-	void player::fall(sf::Time deltaTime) {
+	void fall(sf::Time deltaTime) {
 		if (fallClock.isRunning()) {
 			// transition into a constant fall
 			if (fallClock.getElapsedTime().asSeconds() < fallTransition) {
@@ -82,7 +80,7 @@ namespace player {
 		}
 	}
 
-	void player::maybeProcessJump(sf::Time deltaTime) { // ran in computeGame()
+	void maybeProcessJump(sf::Time deltaTime) { // ran in computeGame()
 		if (jumpClock.isRunning()) {
 			if (jumpClock.getElapsedTime().asSeconds() < jumpDuration) {
 				// cosine wave with the period being fallTransition * 4 (uses the first quarter of a wave)
