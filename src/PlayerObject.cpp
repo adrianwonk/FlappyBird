@@ -2,7 +2,6 @@
 #include <iostream>
 #include <string>
 
-//using namespace player;
 	// this class provides the following functionalities:
 		// Storing a sprite object to represent the player, the position of which is updated per frame via updateCoords();
 		// displaces the sprite in 4 stages:
@@ -17,23 +16,15 @@
 			// fallTransition 			-- determines length of 2.
 			// constantFallMultiplier 	-- determines the coefficient of t during constant fall (t: time since fall began)
 
+//tweakables
+	const float gravity =					480.f;
+	const float fallTransition =			0.28f;
+	const float jumpDuration =				.2f;
+	const float constantFallMultiplier =	1.5f;
 
-namespace player {
+//Bhāskara I's sine approximation formula
 	const double pi = 3.14159265358979323846f;
 	const double piSquared = pi * pi;
-	const float gravity = 480.f;
-	const float x_coord = 150.f;
-	float y_coord;
-
-	sf::Clock jumpClock;
-	sf::Clock fallClock;
-	const float fallTransition = 0.28f;
-	const float jumpDuration = .2f;
-	const float constantFallMultiplier = 1.5f;
-	float sprite_radius;
-	sf::CircleShape sprite;
-
-	//Bhāskara I's sine approximation formula
 	static double sin_fast(float x) {
 		double numerator = 16 * x * (pi - x);
 		double denominator = 5 * piSquared - 4 * x * (pi - x);
@@ -47,14 +38,24 @@ namespace player {
 		return numerator / denominator;
 	}
 
+namespace player {
+
+	const float def_x = 150.f;
+	float curr_y {};
+
+	sf::Clock jumpClock;
+		sf::Clock fallClock;
+	float sprite_radius {};
+	sf::CircleShape sprite;
+
 	void initClocks() {
 		jumpClock.reset();
 		fallClock.reset();
 	}
 
-	sf::Vector2<float> updateCoords() { // updates sprite x,y at the END of each frame, prior to window refresh. Ran in displayGame()
-		sprite.setPosition({ x_coord, y_coord });
-		return { x_coord, y_coord };
+	sf::Vector2<float> updateSpriteCoords() { // updates sprite x,y at the END of each frame, prior to window refresh. Ran in displayGame()
+		sprite.setPosition({ def_x, curr_y });
+		return { def_x, curr_y };
 	}
 
 	////////////////////////////////////////////
@@ -70,12 +71,12 @@ namespace player {
 			// transition into a constant fall
 			if (fallClock.getElapsedTime().asSeconds() < fallTransition) {
 				// sine wave with the period being fallTransition * 4 (uses the first quarter of a wave)
-				y_coord += sin_fast(pi / (2 * fallTransition) * fallClock.getElapsedTime().asSeconds()) * gravity * deltaTime.asSeconds();
+				curr_y += sin_fast(pi / (2 * fallTransition) * fallClock.getElapsedTime().asSeconds()) * gravity * deltaTime.asSeconds();
 			}
 
 			// constant fall
 			else {
-				y_coord += gravity * (1.4 + fallClock.getElapsedTime().asSeconds() * constantFallMultiplier) * deltaTime.asSeconds();
+				curr_y += gravity * (1.4 + fallClock.getElapsedTime().asSeconds() * constantFallMultiplier) * deltaTime.asSeconds();
 			}
 		}
 	}
@@ -84,7 +85,7 @@ namespace player {
 		if (jumpClock.isRunning()) {
 			if (jumpClock.getElapsedTime().asSeconds() < jumpDuration) {
 				// cosine wave with the period being fallTransition * 4 (uses the first quarter of a wave)
-				y_coord -= cos_fast(pi / (2 * jumpDuration) * jumpClock.getElapsedTime().asSeconds()) * gravity * deltaTime.asSeconds();
+				curr_y -= cos_fast(pi / (2 * jumpDuration) * jumpClock.getElapsedTime().asSeconds()) * gravity * deltaTime.asSeconds();
 			}
 			else {
 				// jumpClock running but exceeds upper time bound

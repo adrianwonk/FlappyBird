@@ -130,18 +130,18 @@ void computeGame(sf::Time deltaTime, bool& gameRunning) {
 	player::fall(deltaTime);
 	player::maybeProcessJump(deltaTime);
 
-	if (player::y_coord > SCREEN_HEIGHT + 100.f){
+	if (player::curr_y > SCREEN_HEIGHT + 100.f){
 		gameRunning = false;
 	}
 }
 
 void displayPlayer(sf::RenderWindow& window) {
-    player::updateCoords();
+    player::updateSpriteCoords();
     window.draw(player::sprite);
 }
 
 void resetGame() {
-    player::y_coord = INITIAL_Y_COORD;
+    player::curr_y = INITIAL_Y_COORD;
 	player::initClocks();
 	std::cout << "resetGame()!\n";
 	return;

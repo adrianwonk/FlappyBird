@@ -7,14 +7,14 @@
 #endif
 
 namespace player {
-	extern const float x_coord;
-	extern float y_coord;
+	extern const float def_x;
+	extern float curr_y;
 	extern sf::Clock jumpClock;
 	extern float sprite_radius;
 	extern sf::CircleShape sprite;
 
 	void initClocks();
-	sf::Vector2f updateCoords();
+	sf::Vector2f updateSpriteCoords();
 	void fall(sf::Time deltaTime);
 	void jump();
 	void maybeProcessJump(sf::Time deltaTime);
