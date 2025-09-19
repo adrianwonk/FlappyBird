@@ -12,7 +12,7 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(exec src/main.cpp)
+add_executable(exec src/main.cpp src/PlayerObject.cpp)
 
 # Copy the assets folder to the output directory after building
 add_custom_command(TARGET exec POST_BUILD

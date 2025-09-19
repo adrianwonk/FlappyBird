@@ -1,5 +1,6 @@
 #include "PlayerObject.h"
 #include <iostream>
+#include <string>
 
 using namespace player;
 	// this class provides the following functionalities:
@@ -15,6 +16,10 @@ using namespace player;
 			// gravity 					-- determines the average downward force of the world.
 			// fallTransition 			-- determines length of 2.
 			// constantFallMultiplier 	-- determines the coefficient of t during constant fall (t: time since fall began)
+foo(std::string x) {
+	std::cout << x << '\n';
+}
+
 namespace player {
 	const double pi = 3.14159265358979323846f;
 	const double piSquared = pi * pi;

@@ -6,20 +6,12 @@
 #include <SFML/Graphics.hpp>
 #endif
 
-namespace player {
-	extern const float x_coord;
-	extern float y_coord;
-	extern sf::Clock jumpClock;
-	extern float sprite_radius;
-	extern sf::CircleShape sprite;
-    
-	void initClocks();
-	sf::Vector2f updateCoords();
-    void fall(sf::Time deltaTime);
-    void jump();
-    void maybeProcessJump(sf::Time deltaTime);
+#include <string>
 
-} // namespace player
+void foo(std::string);
+
+
+// namespace player
 
 #endif // PLAYER_OBJECT_H
 
