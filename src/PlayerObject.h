@@ -1,10 +1,6 @@
 #ifndef PLAYER_OBJECT_H
 #define PLAYER_OBJECT_H
-
-#ifndef SFML
-#define SFML
 #include <SFML/Graphics.hpp>
-#endif
 
 namespace player {
 	extern const float def_x;

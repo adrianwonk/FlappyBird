@@ -1,11 +1,15 @@
+#include "main.h"
 #include "PlayerObject.h"
-// #include "ObstacleObject.cpp"
+#include "ObstacleObject.h"
 #include <iostream>
+#include <SFML/Graphics.hpp>
+
 
 void processEvents(sf::RenderWindow&, bool&, bool&, bool&);
 void displayPlayer(sf::RenderWindow& window);
 void computeGame(sf::Time deltaTime, bool&);
 void resetGame();
+void displayObstacles(sf::RenderWindow& window, sf::Time dt);
 
 // TODO!!
 	// add obstacles
@@ -27,7 +31,7 @@ const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 480;
 const float DEATH_SCRN_DELAY = 1;
 const float INITIAL_Y_COORD = 150.f;
-const int FPS = 90;
+const int FPS = 10;
 //////////////////
 
 void main()
@@ -45,9 +49,8 @@ void main()
 	bool deathScreen = false;
 	sf::Font font("src/resx/main_font.ttf");
 	sf::Text text(font);
-	//obstacle::Obstacle ob = obstacle::generateObstacle(40, 10);
-	//obstacle::addObstacle(ob);
-	
+
+
 	text.setString("Hello world");
 	text.setCharacterSize(50);
 	text.setFillColor(sf::Color::White);
@@ -65,11 +68,11 @@ void main()
 		window.clear();
 		processEvents(window, gameRunning, deathScreen, prestartScreen);
 		sf::Time deltaTime = frameClock.restart();
-		//obstacle::renderObstacles(window, deltaTime);
-		
+
 		if (gameRunning) {
 			// game running
 			computeGame(deltaTime, gameRunning); // one frame is between frameClock getting restarted
+			displayObstacles(window, deltaTime);
 		}
 		else if (!deathScreen && !prestartScreen){
 			// death delay
@@ -109,12 +112,16 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
         
 		if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
 			std::cout << "pressed!\n";
-            if (gameRunning || prestartScreen){
-				std::cout << "Jump()!\n";
+			if (prestartScreen) {
 				player::jump();
+				obstacle::initObstacles();
 				prestartScreen = false;
 				gameRunning = true;
 				deathScreen = false;
+			}
+            else if (gameRunning){
+				std::cout << "Jump()!\n";
+				player::jump();
 			}
 			else if (deathScreen) {
 				resetGame();
@@ -126,13 +133,21 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
     }
 }
 
+// calculates all game variables prior to rendering
 void computeGame(sf::Time deltaTime, bool& gameRunning) {
 	player::fall(deltaTime);
 	player::maybeProcessJump(deltaTime);
+	obstacle::computeObstacle();
 
 	if (player::curr_y > SCREEN_HEIGHT + 100.f){
 		gameRunning = false;
 	}
+}
+
+void displayObstacles(sf::RenderWindow& window, sf::Time dt) {
+	// test code
+	obstacle::renderObstacles(window, dt);
+	/////
 }
 
 void displayPlayer(sf::RenderWindow& window) {

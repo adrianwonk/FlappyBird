@@ -1,4 +1,5 @@
 #include "PlayerObject.h"
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <string>
 
