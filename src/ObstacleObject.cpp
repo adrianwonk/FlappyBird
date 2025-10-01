@@ -115,14 +115,16 @@ namespace obstacle {
 	
 	void renderObstacles(sf::RenderWindow& window, sf::Time deltaTime){
 		//std::cout << obstacles.size()<<'\n';
-		for (int i = 0; i < obstacles.size(); i++) {
+		auto size_current_frame = obstacles.size();
+		for (int i = 0; i < size_current_frame; i++) {
 			Obstacle ob = obstacles.front();
 			obstacles.pop();
 			window.draw(ob.top_rect);
 			window.draw(ob.bot_rect);
 			ob.top_rect.move({ -speed * deltaTime.asSeconds(), 0 });
 			ob.bot_rect.move({ -speed * deltaTime.asSeconds(), 0 });
-			if ( ob.top_rect.getPosition().x > destroy_x_coord) {
+			float temp = ob.top_rect.getPosition().x;
+			if (temp > destroy_x_coord) {
 				obstacles.push(ob);
 			}
 		}

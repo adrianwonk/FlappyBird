@@ -31,7 +31,7 @@ const int SCREEN_WIDTH = 600;
 const int SCREEN_HEIGHT = 480;
 const float DEATH_SCRN_DELAY = 1;
 const float INITIAL_Y_COORD = 150.f;
-const int FPS = 10;
+const int FPS = 60;
 //////////////////
 
 void main()
