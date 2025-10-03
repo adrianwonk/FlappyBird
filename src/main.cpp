@@ -7,7 +7,7 @@
 
 void processEvents(sf::RenderWindow&, bool&, bool&, bool&);
 void displayPlayer(sf::RenderWindow& window);
-void computeGame(sf::Time deltaTime, bool&);
+void computeGame(sf::Time, sf::RenderWindow&,bool&);
 void resetGame();
 void displayObstacles(sf::RenderWindow& window, sf::Time dt);
 
@@ -50,7 +50,6 @@ void main()
 	sf::Font font("src/resx/main_font.ttf");
 	sf::Text text(font);
 
-
 	text.setString("Hello world");
 	text.setCharacterSize(50);
 	text.setFillColor(sf::Color::White);
@@ -71,8 +70,7 @@ void main()
 
 		if (gameRunning) {
 			// game running
-			computeGame(deltaTime, gameRunning); // one frame is between frameClock getting restarted
-			displayObstacles(window, deltaTime);
+			computeGame(deltaTime, window, gameRunning); // one frame is between frameClock getting restarted
 		}
 		else if (!deathScreen && !prestartScreen){
 			// death delay
@@ -85,20 +83,23 @@ void main()
 				deathScreen = true;	
 				deathScreenClock.reset();
 			}
+			displayPlayer(window);
 		}
 		else if (deathScreen) {
 			// deathScreen
 			text.setString("dead motherfucker");
 			text.setFillColor(sf::Color::Red);
+			displayPlayer(window);
 			window.draw(text);
+			displayPlayer(window);
 		}
 		else {
 			// prestartScreen
 			text.setString("Welcome to flappy bird!");
 			text.setFillColor(sf::Color::White);
 			window.draw(text);
+			displayPlayer(window);
 		}
-		displayPlayer(window);
 		window.display();
 	}
 }
@@ -133,21 +134,18 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
     }
 }
 
-// calculates all game variables prior to rendering
-void computeGame(sf::Time deltaTime, bool& gameRunning) {
+// calculates all game variables and renders sprites
+void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning) {
 	player::fall(deltaTime);
 	player::maybeProcessJump(deltaTime);
-	obstacle::computeObstacle();
+	displayPlayer(window);
 
-	if (player::curr_y > SCREEN_HEIGHT + 100.f){
+	obstacle::computeObstacle();
+	obstacle::renderObstacles(window, deltaTime);
+	
+	if (player::curr_y > SCREEN_HEIGHT + 100.f) {
 		gameRunning = false;
 	}
-}
-
-void displayObstacles(sf::RenderWindow& window, sf::Time dt) {
-	// test code
-	obstacle::renderObstacles(window, dt);
-	/////
 }
 
 void displayPlayer(sf::RenderWindow& window) {

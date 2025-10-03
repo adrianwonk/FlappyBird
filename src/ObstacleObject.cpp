@@ -111,8 +111,6 @@ namespace obstacle {
 		}
 	}
 
-	
-	
 	void renderObstacles(sf::RenderWindow& window, sf::Time deltaTime){
 		//std::cout << obstacles.size()<<'\n';
 		auto size_current_frame = obstacles.size();
