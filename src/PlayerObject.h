@@ -3,7 +3,7 @@
 #include <SFML/Graphics.hpp>
 
 namespace player {
-	extern const float def_x;
+	constexpr float def_x = 150.f;
 	extern float curr_y;
 	extern sf::Clock jumpClock;
 	extern float sprite_radius;
@@ -14,6 +14,7 @@ namespace player {
 	void fall(sf::Time deltaTime);
 	void jump();
 	void maybeProcessJump(sf::Time deltaTime);
+	sf::Vector2f getCenter();
 
 } // namespace player
 

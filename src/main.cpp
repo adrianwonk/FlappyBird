@@ -9,30 +9,15 @@ void processEvents(sf::RenderWindow&, bool&, bool&, bool&);
 void displayPlayer(sf::RenderWindow& window);
 void computeGame(sf::Time, sf::RenderWindow&,bool&);
 void resetGame();
-void displayObstacles(sf::RenderWindow& window, sf::Time dt);
+void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle*);
 
-// TODO!!
-	// add obstacles
-		// spawn in constant x_coordinate
-		// variable negative space r >=r_min
-			// r_min<=r<=min(center - buffer, SCREEN_HEIGHT - center - buffer)
-			
-		// variable center (center_min = 0 + r_min + buffer)
-							// (center_max = SCEEN_HEIGHT - buffer - r_min)
-	// add to linked_list of obstacle structs
-	
-	// linked list of obstacle structs
-	// progress all their x coordinate per frame (linear iteration)
-	// 
-
-
-// for tweaking
-const int SCREEN_WIDTH = 600;
-const int SCREEN_HEIGHT = 480;
-const float DEATH_SCRN_DELAY = 1;
-const float INITIAL_Y_COORD = 150.f;
-const int FPS = 60;
-//////////////////
+obstacle::Obstacle* killerOb = nullptr;
+void updateKillerOb(obstacle::Obstacle* ob) {
+	if (killerOb == ob)
+		return;
+	delete killerOb;
+	killerOb = ob;
+}
 
 void main()
 {
@@ -59,10 +44,9 @@ void main()
 	resetGame();
     
     // game shit: player
-    player::sprite_radius = 11.f;
+    player::sprite_radius = sprite_radius;
     player::sprite = sf::CircleShape(player::sprite_radius);
 
-   
     while (window.isOpen()) {
 		window.clear();
 		processEvents(window, gameRunning, deathScreen, prestartScreen);
@@ -83,15 +67,17 @@ void main()
 				deathScreen = true;	
 				deathScreenClock.reset();
 			}
-			displayPlayer(window);
+			else {
+				obstacle::initObstacles(); // delete excess obstacles
+			}
+			displayDeadScreen(window, killerOb);
 		}
 		else if (deathScreen) {
 			// deathScreen
 			text.setString("dead motherfucker");
 			text.setFillColor(sf::Color::Red);
-			displayPlayer(window);
 			window.draw(text);
-			displayPlayer(window);
+			displayDeadScreen(window, killerOb);
 		}
 		else {
 			// prestartScreen
@@ -105,6 +91,11 @@ void main()
 }
 
 ////////////////////////////////////////////////////
+// processEvents - keypresses -> functions (clocks)
+// computeGame - frame1 -> frame2
+// resetGame - frame0
+// displayPlayer
+// displayDeadScreen
 void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScreen, bool& prestartScreen) {
     while (const std::optional event = window.pollEvent()) {
         
@@ -137,25 +128,36 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
 // calculates all game variables and renders sprites
 void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning) {
 	player::fall(deltaTime);
-	player::maybeProcessJump(deltaTime);
+	player::maybeProcessJump(deltaTime);			// changes player position
 	displayPlayer(window);
 
-	obstacle::computeObstacle();
-	obstacle::renderObstacles(window, deltaTime);
+	obstacle::maybeInstantiateObstacle();
+	std::tuple<bool, obstacle::Obstacle*> notCollided = obstacle::iterateObstacleQueue(window, deltaTime, player::sprite_radius, player::getCenter()); // changes obstacle position
 	
-	if (player::curr_y > SCREEN_HEIGHT + 100.f) {
+	if (!std::get<0>(notCollided)) {
 		gameRunning = false;
+		updateKillerOb(std::get<1>(notCollided));
+		return;
 	}
 }
 
-void displayPlayer(sf::RenderWindow& window) {
-    player::updateSpriteCoords();
-    window.draw(player::sprite);
-}
-
+// initialises game object prior to round start
 void resetGame() {
-    player::curr_y = INITIAL_Y_COORD;
+	player::curr_y = INITIAL_Y_COORD;
 	player::initClocks();
 	std::cout << "resetGame()!\n";
 	return;
+}
+
+void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle* ob) {
+	displayPlayer(window);
+	ob->top_rect.setFillColor(sf::Color::Red);
+	ob->bot_rect.setFillColor(sf::Color::Red);
+	window.draw(ob->top_rect);
+	window.draw(ob->bot_rect);
+}
+
+void displayPlayer(sf::RenderWindow& window) {
+	player::updateSpriteCoords();
+    window.draw(player::sprite);
 }

@@ -1,10 +1,11 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-extern const int SCREEN_WIDTH;
-extern const int SCREEN_HEIGHT;
-extern const float DEATH_SCRN_DELAY;
-extern const float INITIAL_Y_COORD;
-extern const int FPS;
+constexpr int SCREEN_WIDTH = 600;
+constexpr int SCREEN_HEIGHT = 480;
+constexpr float DEATH_SCRN_DELAY = 1;
+constexpr float INITIAL_Y_COORD = 150.f;
+constexpr int FPS = 1000;
+constexpr float sprite_radius = 12.f;
 
 #endif

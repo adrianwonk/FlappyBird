@@ -6,11 +6,12 @@ namespace obstacle {
 	struct Obstacle {
 		sf::RectangleShape top_rect {};
 	 	sf::RectangleShape bot_rect {};
+		const float topHeight;
+		const float botHeight;
 	};
-	void initClock();
 	void initObstacles();
-	void computeObstacle();
-	void renderObstacles(sf::RenderWindow& window, sf::Time deltaTime);
-	//void testObstacle();
+	void maybeInstantiateObstacle();
+	std::tuple<bool, Obstacle*> iterateObstacleQueue(sf::RenderWindow& window, const sf::Time& deltaTime, const float radius, const sf::Vector2f& playerPosition);
+	bool collidedPlayer(Obstacle& ob, float radius, const sf::Vector2f& center);
 }
 #endif

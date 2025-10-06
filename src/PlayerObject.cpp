@@ -41,7 +41,6 @@
 
 namespace player {
 
-	const float def_x = 150.f;
 	float curr_y {};
 
 	sf::Clock jumpClock;
@@ -94,5 +93,9 @@ namespace player {
 				fallClock.restart();
 			}
 		}
+	}
+
+	sf::Vector2f getCenter() {
+		return sprite.getGeometricCenter() + sf::Vector2f{def_x, curr_y};
 	}
 }
