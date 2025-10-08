@@ -8,6 +8,7 @@ namespace obstacle {
 	 	sf::RectangleShape bot_rect {};
 		const float topHeight;
 		const float botHeight;
+		bool scored;
 	};
 	void initObstacles();
 	void maybeInstantiateObstacle();

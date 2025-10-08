@@ -7,7 +7,7 @@
 
 void processEvents(sf::RenderWindow&, bool&, bool&, bool&);
 void displayPlayer(sf::RenderWindow& window);
-void computeGame(sf::Time, sf::RenderWindow&,bool&);
+void computeGame(sf::Time, sf::RenderWindow&,bool&, sf::Text&);
 void resetGame();
 void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle*);
 
@@ -18,6 +18,19 @@ void updateKillerOb(obstacle::Obstacle* ob) {
 	delete killerOb;
 	killerOb = ob;
 }
+
+int score = 0;
+void incScore() {
+	score++;
+}
+void resetScore() {
+	score = 0;
+}
+void showScore(sf::RenderWindow& window, sf::Text& text) {
+	text.setString(std::to_string(score));
+	window.draw(text);
+}
+
 
 void main()
 {
@@ -34,6 +47,8 @@ void main()
 	bool deathScreen = false;
 	sf::Font font("src/resx/main_font.ttf");
 	sf::Text text(font);
+	/*sf::Text scoreText(font);
+	scoreText.setCharacterSize(30);*/
 
 	text.setString("Hello world");
 	text.setCharacterSize(50);
@@ -54,7 +69,7 @@ void main()
 
 		if (gameRunning) {
 			// game running
-			computeGame(deltaTime, window, gameRunning); // one frame is between frameClock getting restarted
+			computeGame(deltaTime, window, gameRunning, text); // one frame is between frameClock getting restarted
 		}
 		else if (!deathScreen && !prestartScreen){
 			// death delay
@@ -70,12 +85,13 @@ void main()
 			else {
 				obstacle::initObstacles(); // delete excess obstacles
 			}
+			showScore(window, text);
 			displayDeadScreen(window, killerOb);
 		}
 		else if (deathScreen) {
 			// deathScreen
 			text.setString("dead motherfucker");
-			text.setFillColor(sf::Color::Red);
+			text.setFillColor(sf::Color({ 77, 14, 10, 255 }));
 			window.draw(text);
 			displayDeadScreen(window, killerOb);
 		}
@@ -126,7 +142,7 @@ void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScree
 }
 
 // calculates all game variables and renders sprites
-void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning) {
+void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning, sf::Text& text) {
 	player::fall(deltaTime);
 	player::maybeProcessJump(deltaTime);			// changes player position
 	displayPlayer(window);
@@ -139,6 +155,9 @@ void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning
 		updateKillerOb(std::get<1>(notCollided));
 		return;
 	}
+	else {
+		showScore(window, text);
+	}
 }
 
 // initialises game object prior to round start
@@ -146,6 +165,7 @@ void resetGame() {
 	player::curr_y = INITIAL_Y_COORD;
 	player::initClocks();
 	std::cout << "resetGame()!\n";
+	resetScore();
 	return;
 }
 

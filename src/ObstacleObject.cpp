@@ -12,19 +12,19 @@ int clock_initialised = 0;
 
 namespace obstacle {
 	constexpr float x_coord = SCREEN_WIDTH;
-	constexpr float width = 50;
+	constexpr float width = 150;
 	constexpr float destroy_x_coord = -width;
 	constexpr int buffer = 30;
 
-	constexpr float speed = 350.f;
+	constexpr float speed = 600.f;
 
-	constexpr int min_radius = 45;
-	constexpr float radius_variance = 1.7f;
+	constexpr int min_radius = 50;
+	constexpr float radius_variance = 1.6f;
 	const int max_radius = round(min_radius * radius_variance);
 	const int max_radius_spread = max_radius - min_radius;
 	
-	constexpr float min_period = 1.f;
-	constexpr float period_variance = 1.7f;
+	constexpr float min_period = 0.8f;
+	constexpr float period_variance = 1.6f;
 	constexpr float max_period = min_period * period_variance;
 	constexpr float max_period_spread = max_period - min_period;
 	float curr_period = 0;
@@ -56,7 +56,7 @@ namespace obstacle {
 		sf::RectangleShape botShape({ width, botLength });
 		botShape.setPosition({ x_coord, (float)(center + radius) });
 
-		return new Obstacle { topShape, botShape, topLength, botLength };
+		return new Obstacle { topShape, botShape, topLength, botLength, false };
 	}
 
 	auto get_random() {
@@ -100,7 +100,8 @@ namespace obstacle {
 		if (period_timer.getElapsedTime().asSeconds() >= curr_period) {
 			// calculate the radius and spread
 			int curr_radius = min_radius + round(get_random() * max_radius_spread);
-			
+			//int curr_radius = min_radius;
+
 			// calculate the center  
 			auto center_lower_bound = buffer + curr_radius;
 			auto center_upper_bound = SCREEN_HEIGHT - buffer - curr_radius;
@@ -138,11 +139,18 @@ namespace obstacle {
 		return { true, nullptr};
 	}
 	
+	// NEW: calculates score as well
 	bool collidedPlayer(Obstacle& ob, float radius, const sf::Vector2f& center) {
 		float leftBound = ob.top_rect.getPosition().x;
 		const float distanceFromCenter = leftBound - center.x;
 		if (distanceFromCenter <= radius) {
-			if (distanceFromCenter <= -radius - width) return false;
+			if (distanceFromCenter <= -radius - width) {
+				if (!ob.scored) {
+					incScore();
+					ob.scored = true;
+				}
+				return false;
+			}
 			if (center.y <= ob.topHeight + radius || ob.bot_rect.getPosition().y - radius <= center.y)
   				return true;
 			else {
@@ -168,12 +176,6 @@ namespace obstacle {
 					float dist_bot = std::min({ dist_bot_L, dist_bot_R });
 
 					if (std::min({ dist_top, dist_bot }) <= radius) {
-						/*if (dist_top < dist_bot) {
-							player::curr_y = ob.topHeight;
-						}
-						else {
-							player::curr_y = ob.botHeight - player::sprite_radius * 2;
-						}*/
 						return true;
 					}
 					else return false;
