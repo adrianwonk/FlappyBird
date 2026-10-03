@@ -5,7 +5,14 @@
 #include <iostream>
 #include <random>
 #include <algorithm>
+#include <cmath>
 #include "PlayerObject.h"
+
+/***********************************************/
+/*  Creates resx for an Obstacle UI object.    */
+/*  Contains width/height, and SFML boxes.     */
+/***********************************************/
+
 
 using namespace obstacle;
 int clock_initialised = 0;
@@ -100,7 +107,6 @@ namespace obstacle {
 		if (period_timer.getElapsedTime().asSeconds() >= curr_period) {
 			// calculate the radius and spread
 			int curr_radius = min_radius + round(get_random() * max_radius_spread);
-			//int curr_radius = min_radius;
 
 			// calculate the center  
 			auto center_lower_bound = buffer + curr_radius;
@@ -154,8 +160,8 @@ namespace obstacle {
 			if (center.y <= ob.topHeight + radius || ob.bot_rect.getPosition().y - radius <= center.y)
   				return true;
 			else {
-				if (leftBound <= center.x <= leftBound + width) {
-					if (ob.topHeight + radius < center.y < ob.bot_rect.getPosition().y - radius)
+				if (leftBound <= center.x && center.x <= leftBound + width) {
+					if (ob.topHeight + radius < center.y && center.y < ob.bot_rect.getPosition().y - radius)
 						return false;
 					else {
 						return true;

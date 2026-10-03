@@ -3,15 +3,56 @@
 #include "ObstacleObject.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
+#include "IMutator.hpp"
+#include "view_controller.hpp"
+#include "sfml_resx_manager.hpp"
+
+namespace {
+    /***********************************************/
+    /*  All possible states of the program.        */
+    /*                                             */
+    /***********************************************/
+    enum class state {
+        start,
+        running,
+        dying,
+        dead
+    };
+
+    sfml_resx_manager sfml_resx;
+
+    /***********************************************/
+    /*  UI resx for presentation of the game.      */
+    /*                                             */
+    /***********************************************/
+    sf::RenderWindow window;
+    sf::Font font {"src/resx/main_font.ttf"} ;
+    sf::Text text {font} ;
+	sf::Clock deathScreenClock;
+
+    /***********************************************/
+    /*  Frame clock used to measure time between   */
+    /*  each subsequent frame.                     */
+    /*                                             */
+    /***********************************************/
+    sf::Clock frameClock;
+};
 
 
-void processEvents(sf::RenderWindow&, bool&, bool&, bool&);
+obstacle::Obstacle* killerOb = nullptr;
+
+void processEvents( sf::RenderWindow& window, state& game_state );
 void displayPlayer(sf::RenderWindow& window);
-void computeGame(sf::Time, sf::RenderWindow&,bool&, sf::Text&);
+void computeGame(sf::Time deltaTime, sf::RenderWindow& window, state& game_state, sf::Text& text);
 void resetGame();
 void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle*);
 
-obstacle::Obstacle* killerOb = nullptr;
+/***********************************************/
+/*  Maintains a reference to the obstacle      */
+/*  that the player died touching most         */
+/*  recently.                                  */
+/*                                             */
+/***********************************************/
 void updateKillerOb(obstacle::Obstacle* ob) {
 	if (killerOb == ob)
 		return;
@@ -19,6 +60,12 @@ void updateKillerOb(obstacle::Obstacle* ob) {
 	killerOb = ob;
 }
 
+/***********************************************/
+/*  Global score variable to be incremented    */
+/*  when player passes an obstacle, and reset  */
+/*  on death.                                  */
+/*                                             */
+/***********************************************/
 int score = 0;
 void incScore() {
 	score++;
@@ -26,69 +73,69 @@ void incScore() {
 void resetScore() {
 	score = 0;
 }
+
+/***********************************************/
+/*  Overwrites the UI text displaying the      */
+/*  score with the current global score value. */
+/*                                             */
+/***********************************************/
 void showScore(sf::RenderWindow& window, sf::Text& text) {
 	text.setString(std::to_string(score));
 	window.draw(text);
 }
 
 
-void main()
+/***********************************************/
+/*  Organises input polling, game-mechanic     */
+/*  computations, UI drawing, and program      */
+/*  state handling, all synchronised with      */
+/*  frame time.                                */
+/*                                             */
+/***********************************************/
+int main()
 {
-	// window shit
-    auto windowStyle = sf::Style::Close | sf::Style::Titlebar;
-    auto window = sf::RenderWindow(sf::VideoMode({ SCREEN_WIDTH, SCREEN_HEIGHT }), "FlappyBird", windowStyle);
-    window.setKeyRepeatEnabled(false);
-    window.setFramerateLimit(FPS);
-	
-    // game shit
-    sf::Clock frameClock;
-	bool prestartScreen = true;
-    bool gameRunning = false;
-	bool deathScreen = false;
-	sf::Font font("src/resx/main_font.ttf");
-	sf::Text text(font);
-	/*sf::Text scoreText(font);
-	scoreText.setCharacterSize(30);*/
+    state game_state { state::start };
 
-	text.setString("Hello world");
-	text.setCharacterSize(50);
-	text.setFillColor(sf::Color::White);
+    sfml_resx.init_window(window);
+    sfml_resx.set_default_text(text);
 	
-	sf::Clock deathScreenClock;
-	deathScreenClock.reset();
+    deathScreenClock.reset();
 	resetGame();
     
-    // game shit: player
+
+    /***********************************************/
+    /*  Initialise player radius using constants   */
+    /*  in order to calculate collision and draw   */
+    /*  UI sprite.                                 */
+    /*                                             */
+    /***********************************************/
     player::sprite_radius = sprite_radius;
     player::sprite = sf::CircleShape(player::sprite_radius);
 
     while (window.isOpen()) {
 		window.clear();
-		processEvents(window, gameRunning, deathScreen, prestartScreen);
+		processEvents(window, game_state);
 		sf::Time deltaTime = frameClock.restart();
 
-		if (gameRunning) {
+		if (game_state == state::running) {
 			// game running
-			computeGame(deltaTime, window, gameRunning, text); // one frame is between frameClock getting restarted
+			computeGame(deltaTime, window, game_state, text); // one frame is between frameClock getting restarted
 		}
-		else if (!deathScreen && !prestartScreen){
+		else if (game_state == state::dying){
 			// death delay
 			if (!deathScreenClock.isRunning()){
 				deathScreenClock.restart();
 			} else if (deathScreenClock.getElapsedTime().asSeconds() > DEATH_SCRN_DELAY) {
 				// play death screen
-				prestartScreen = false;
-				gameRunning = false;
-				deathScreen = true;	
+                game_state = state::dead;
 				deathScreenClock.reset();
-			}
-			else {
+			} else {
 				obstacle::initObstacles(); // delete excess obstacles
 			}
 			showScore(window, text);
 			displayDeadScreen(window, killerOb);
 		}
-		else if (deathScreen) {
+		else if (game_state == state::dead) {
 			// deathScreen
 			text.setString("dead motherfucker");
 			text.setFillColor(sf::Color({ 77, 14, 10, 255 }));
@@ -104,45 +151,50 @@ void main()
 		}
 		window.display();
 	}
+    return 0;
 }
 
-////////////////////////////////////////////////////
-// processEvents - keypresses -> functions (clocks)
-// computeGame - frame1 -> frame2
-// resetGame - frame0
-// displayPlayer
-// displayDeadScreen
-void processEvents(sf::RenderWindow& window, bool& gameRunning, bool& deathScreen, bool& prestartScreen) {
+/***********************************************/
+/*  Poll keyboard input, and call different    */
+/*  functions depending on current program     */
+/*  state.                                     */
+/*                                             */
+/***********************************************/
+void processEvents( sf::RenderWindow& window, state& game_state ) {
     while (const std::optional event = window.pollEvent()) {
         
 		if (event->is<sf::Event::Closed>())
             window.close();
         
 		if (const auto* key = event->getIf<sf::Event::KeyPressed>()) {
-			std::cout << "pressed!\n";
-			if (prestartScreen) {
+			std::cout << "Button pressed!\n";
+			if (game_state == state::start) {
+				std::cout << "\tinterpret action: jump()! state: start->running\n";
 				player::jump();
 				obstacle::initObstacles();
-				prestartScreen = false;
-				gameRunning = true;
-				deathScreen = false;
+                game_state = state::running;
 			}
-            else if (gameRunning){
-				std::cout << "Jump()!\n";
+            else if (game_state == state::running){
+				std::cout << "\tinterpret action: jump()! no state change\n";
 				player::jump();
 			}
-			else if (deathScreen) {
+			else if (game_state == state::dead) {
+				std::cout << "\tinterpret action: resetGame()! state: dead->start\n";
 				resetGame();
-				prestartScreen = true;
-				gameRunning = false;
-				deathScreen = false;
+                game_state = state::start;
 			}
 		}
     }
 }
 
-// calculates all game variables and renders sprites
-void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning, sf::Text& text) {
+/***********************************************/
+/*  Computes the next frame of the game by     */
+/*  polling for user input, applying gravity,  */
+/*  and randomly spawning new obstacles.       */
+/*  Updates killer object on player death.     */
+/*                                             */
+/***********************************************/
+void computeGame(sf::Time deltaTime, sf::RenderWindow& window, state& game_state, sf::Text& text) {
 	player::fall(deltaTime);
 	player::maybeProcessJump(deltaTime);			// changes player position
 	displayPlayer(window);
@@ -151,7 +203,7 @@ void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning
 	std::tuple<bool, obstacle::Obstacle*> notCollided = obstacle::iterateObstacleQueue(window, deltaTime, player::sprite_radius, player::getCenter()); // changes obstacle position
 	
 	if (!std::get<0>(notCollided)) {
-		gameRunning = false;
+		game_state = state::dying;
 		updateKillerOb(std::get<1>(notCollided));
 		return;
 	}
@@ -160,7 +212,11 @@ void computeGame(sf::Time deltaTime, sf::RenderWindow& window, bool& gameRunning
 	}
 }
 
-// initialises game object prior to round start
+/***********************************************/
+/*  Prepares a new game by resetting clocks,   */
+/*  player position, and score.                */
+/*                                             */
+/***********************************************/
 void resetGame() {
 	player::curr_y = INITIAL_Y_COORD;
 	player::initClocks();
@@ -169,6 +225,11 @@ void resetGame() {
 	return;
 }
 
+/***********************************************/
+/*  Stylises obstacle the killed the player    */
+/*  and draws it onto the screen afterwards.   */
+/*                                             */
+/***********************************************/
 void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle* ob) {
 	displayPlayer(window);
 	ob->top_rect.setFillColor(sf::Color::Red);
@@ -177,6 +238,11 @@ void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle* ob) {
 	window.draw(ob->bot_rect);
 }
 
+/***********************************************/
+/*  Updates player movement and draws the      */
+/*  sprite.                                    */
+/*                                             */
+/***********************************************/
 void displayPlayer(sf::RenderWindow& window) {
 	player::updateSpriteCoords();
     window.draw(player::sprite);

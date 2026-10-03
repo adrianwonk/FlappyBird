@@ -1,5 +1,6 @@
 #ifndef OBSTACLEOBJECT_H
-#define OSTACLEOBJECT_H
+#define OBSTACLEOBJECT_H
+#include <tuple>
 #include <SFML/Graphics.hpp>
 
 namespace obstacle {

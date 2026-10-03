@@ -12,18 +12,14 @@ FetchContent_Declare(SFML
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
 
-add_executable(
-    exec src/main.cpp
-    src/PlayerObject.cpp
-    src/ObstacleObject.cpp
-)
+add_executable( run_program )
+add_subdirectory(src)
 
 # Copy the assets folder to the output directory after building
-add_custom_command(TARGET exec POST_BUILD
+add_custom_command(TARGET run_program POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-    ${CMAKE_SOURCE_DIR}/src $<TARGET_FILE_DIR:exec>/src
+    ${CMAKE_SOURCE_DIR}/src/resx $<TARGET_FILE_DIR:run_program>/src/resx
 )
 
-target_compile_features(exec PRIVATE cxx_std_17)
-target_link_libraries(exec PRIVATE SFML::Graphics)
-
+target_compile_features(run_program PRIVATE cxx_std_17)
+target_link_libraries(run_program PRIVATE SFML::Graphics)

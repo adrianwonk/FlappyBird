@@ -3,41 +3,33 @@
 #include <iostream>
 #include <string>
 
-	// this class provides the following functionalities:
-		// Storing a sprite object to represent the player, the position of which is updated per frame via updateCoords();
-		// displaces the sprite in 4 stages:
-			// no displacement 						(at the beginning of game)
-			// 1. upward displacement to neutural 	(started by jump()) (interrupt)
-			// 2. neutral to downward 				(started after upward 1.)
-			// 3. downward infinitum 				(started after 2.) 
-				// increases PAST gravity
-			
-		// the main variables are:
-			// gravity 					-- determines the average downward force of the world.
-			// fallTransition 			-- determines length of 2.
-			// constantFallMultiplier 	-- determines the coefficient of t during constant fall (t: time since fall began)
 
-//tweakables
-	const float gravity =					480.f;
-	const float fallTransition =			0.28f;
-	const float jumpDuration =				.2f;
-	const float constantFallMultiplier =	1.5f;
+/***********************************************/
+/* Represents the player, and provides jump    */
+/* and fall capability. Jump is 2 phased.      */
+/* First phase is sine hill, second is         */
+/* constant.                                   */
+/***********************************************/
+const float gravity =					480.f;
+const float fallTransition =			0.28f;
+const float jumpDuration =				.2f;
+const float constantFallMultiplier =	1.5f;
 
-//Bhāskara I's sine approximation formula
-	const double pi = 3.14159265358979323846f;
-	const double piSquared = pi * pi;
-	static double sin_fast(float x) {
-		double numerator = 16 * x * (pi - x);
-		double denominator = 5 * piSquared - 4 * x * (pi - x);
-		return numerator / denominator;
-	}
+//Bhāskara I's sine approximation formula for the first phase of jump
+const double pi = 3.14159265358979323846f;
+const double piSquared = pi * pi;
+static double sin_fast(float x) {
+    double numerator = 16 * x * (pi - x);
+    double denominator = 5 * piSquared - 4 * x * (pi - x);
+    return numerator / denominator;
+}
 
-	static double cos_fast(float x) {
-		double xSquared = x * x;
-		double numerator = piSquared - 4 * xSquared;
-		double denominator = piSquared + xSquared;
-		return numerator / denominator;
-	}
+static double cos_fast(float x) {
+    double xSquared = x * x;
+    double numerator = piSquared - 4 * xSquared;
+    double denominator = piSquared + xSquared;
+    return numerator / denominator;
+}
 
 namespace player {
 
