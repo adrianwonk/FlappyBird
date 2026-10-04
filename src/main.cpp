@@ -3,8 +3,6 @@
 #include "ObstacleObject.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include "IMutator.hpp"
-#include "view_controller.hpp"
 #include "sfml_resx_manager.hpp"
 
 namespace {
@@ -41,11 +39,6 @@ namespace {
 
 obstacle::Obstacle* killerOb = nullptr;
 
-void processEvents( sf::RenderWindow& window, state& game_state );
-void displayPlayer(sf::RenderWindow& window);
-void computeGame(sf::Time deltaTime, sf::RenderWindow& window, state& game_state, sf::Text& text);
-void resetGame();
-void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle*);
 
 /***********************************************/
 /*  Maintains a reference to the obstacle      */
@@ -94,6 +87,12 @@ void showScore(sf::RenderWindow& window, sf::Text& text) {
 /***********************************************/
 int main()
 {
+    void processEvents( sf::RenderWindow& window, state& game_state );
+    void displayPlayer(sf::RenderWindow& window);
+    void computeGame(sf::Time deltaTime, sf::RenderWindow& window, state& game_state, sf::Text& text);
+    void resetGame();
+    void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle*);
+
     state game_state { state::start };
 
     sfml_resx.init_window(window);
@@ -161,6 +160,8 @@ int main()
 /*                                             */
 /***********************************************/
 void processEvents( sf::RenderWindow& window, state& game_state ) {
+    void resetGame();
+
     while (const std::optional event = window.pollEvent()) {
         
 		if (event->is<sf::Event::Closed>())
@@ -195,6 +196,7 @@ void processEvents( sf::RenderWindow& window, state& game_state ) {
 /*                                             */
 /***********************************************/
 void computeGame(sf::Time deltaTime, sf::RenderWindow& window, state& game_state, sf::Text& text) {
+    void displayPlayer(sf::RenderWindow&);
 	player::fall(deltaTime);
 	player::maybeProcessJump(deltaTime);			// changes player position
 	displayPlayer(window);
@@ -231,6 +233,7 @@ void resetGame() {
 /*                                             */
 /***********************************************/
 void displayDeadScreen(sf::RenderWindow& window, obstacle::Obstacle* ob) {
+    void displayPlayer(sf::RenderWindow&);
 	displayPlayer(window);
 	ob->top_rect.setFillColor(sf::Color::Red);
 	ob->bot_rect.setFillColor(sf::Color::Red);
